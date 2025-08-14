@@ -1,0 +1,42 @@
+# Include production requirements
+-r requirements.txt
+
+# Jupyter and Notebooks
+jupyter>=1.0.0
+jupyterlab>=4.0.0
+notebook>=7.0.0
+ipywidgets>=8.0.0
+
+# Code Quality and Formatting
+black>=23.0.0
+ruff>=0.0.280
+isort>=5.12.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.11.0
+
+# Pre-commit Hooks
+pre-commit>=3.3.0
+
+# Development Tools
+ipdb>=0.13.0
+python-dotenv>=1.0.0
+
+# Data Analysis and Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Profiling and Performance
+memory-profiler>=0.60.0
+
+# Documentation (optional - install separately if needed)
+# sphinx>=7.0.0
+# sphinx-rtd-theme>=1.2.0
+
+# Type Checking
+mypy>=1.4.0
+types-PyYAML>=6.0.0
+types-requests>=2.31.0

@@ -83,5 +83,5 @@ repos:
         args: ['--baseline', '.secrets.baseline']
 
 # Configuration
-default_stages: [commit]
+default_stages: [pre-commit]
 fail_fast: false

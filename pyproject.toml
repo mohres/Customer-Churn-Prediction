@@ -136,6 +136,8 @@ select = [
 ]
 ignore = [
     "E501",  # line too long, handled by black
+    "E402",  # module level import not at top of file
+    "E712",  # comparison to True/False should be 'if cond is True:' or 'if cond:'
     "B008",  # do not perform function calls in argument defaults
     "S101",  # use of assert detected
     "T201",  # print found

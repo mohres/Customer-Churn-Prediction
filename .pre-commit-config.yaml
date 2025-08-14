@@ -38,22 +38,6 @@ repos:
         args: [--pytest-test-first]
 
 
-  # Jupyter notebook cleaning
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.9.1
-    hooks:
-      - id: nbqa-black
-        additional_dependencies: [black]
-      - id: nbqa-ruff
-        additional_dependencies: [ruff]
-      - id: nbqa-isort
-        additional_dependencies: [isort]
-
-  # Remove notebook outputs
-  - repo: https://github.com/kynan/nbstripout
-    rev: 0.8.1
-    hooks:
-      - id: nbstripout
 
 
 # Configuration

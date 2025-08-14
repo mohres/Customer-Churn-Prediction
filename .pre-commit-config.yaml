@@ -12,7 +12,7 @@ repos:
     rev: v0.12.8
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix, --ignore, E712]
+        args: [--fix, --exit-non-zero-on-fix, --ignore, E712,E402]
 
   # isort - import sorting
   - repo: https://github.com/pycqa/isort

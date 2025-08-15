@@ -101,7 +101,7 @@ dmypy.json
 
 # ML-specific ignores
 # Model artifacts
-models/
+
 *.pkl
 *.joblib
 *.model
@@ -112,7 +112,8 @@ mlruns/
 mlartifacts/
 
 # Data files (but keep sample data)
-data/
+data/*.json
+data/*.csv
 !data/sample/
 *.csv
 *.json

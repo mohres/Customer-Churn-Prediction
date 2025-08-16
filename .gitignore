@@ -166,3 +166,5 @@ config/secrets.yml
 
 # Pre-commit
 .pre-commit-config.yaml.bak
+test_monitoring_data
+test_dashboard

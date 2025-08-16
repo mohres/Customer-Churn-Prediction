@@ -1,0 +1,82 @@
+name: churn_prediction
+
+python_env: python_env.yaml
+
+entry_points:
+  main:
+    parameters:
+      data_path: {type: str, default: "data/customer_churn_mini.json"}
+      test_size: {type: float, default: 0.2}
+      random_state: {type: int, default: 42}
+      max_depth_xgb: {type: int, default: 6}
+      learning_rate_xgb: {type: float, default: 0.1}
+      n_estimators_xgb: {type: int, default: 200}
+      num_leaves_lgb: {type: int, default: 31}
+      learning_rate_lgb: {type: float, default: 0.05}
+      n_estimators_lgb: {type: int, default: 200}
+      enable_xgboost: {type: str, default: "true"}
+      enable_lightgbm: {type: str, default: "true"}
+    command: "python scripts/mlflow_training_entry.py
+              --data-path {data_path}
+              --test-size {test_size}
+              --random-state {random_state}
+              --max-depth-xgb {max_depth_xgb}
+              --learning-rate-xgb {learning_rate_xgb}
+              --n-estimators-xgb {n_estimators_xgb}
+              --num-leaves-lgb {num_leaves_lgb}
+              --learning-rate-lgb {learning_rate_lgb}
+              --n-estimators-lgb {n_estimators_lgb}
+              --enable-xgboost {enable_xgboost}
+              --enable-lightgbm {enable_lightgbm}"
+
+  production:
+    parameters:
+      data_path: {type: str, default: "data/customer_churn.json"}
+      test_size: {type: float, default: 0.2}
+      random_state: {type: int, default: 42}
+      max_depth_xgb: {type: int, default: 8}
+      learning_rate_xgb: {type: float, default: 0.05}
+      n_estimators_xgb: {type: int, default: 500}
+      num_leaves_lgb: {type: int, default: 63}
+      learning_rate_lgb: {type: float, default: 0.03}
+      n_estimators_lgb: {type: int, default: 500}
+      enable_xgboost: {type: str, default: "true"}
+      enable_lightgbm: {type: str, default: "true"}
+    command: "python scripts/mlflow_training_entry.py
+              --data-path {data_path}
+              --test-size {test_size}
+              --random-state {random_state}
+              --max-depth-xgb {max_depth_xgb}
+              --learning-rate-xgb {learning_rate_xgb}
+              --n-estimators-xgb {n_estimators_xgb}
+              --num-leaves-lgb {num_leaves_lgb}
+              --learning-rate-lgb {learning_rate_lgb}
+              --n-estimators-lgb {n_estimators_lgb}
+              --enable-xgboost {enable_xgboost}
+              --enable-lightgbm {enable_lightgbm}"
+
+  quick_test:
+    parameters:
+      data_path: {type: str, default: "data/customer_churn_mini.json"}
+      test_size: {type: float, default: 0.3}
+      random_state: {type: int, default: 42}
+      max_depth_xgb: {type: int, default: 3}
+      learning_rate_xgb: {type: float, default: 0.2}
+      n_estimators_xgb: {type: int, default: 50}
+      num_leaves_lgb: {type: int, default: 15}
+      learning_rate_lgb: {type: float, default: 0.1}
+      n_estimators_lgb: {type: int, default: 50}
+      enable_xgboost: {type: str, default: "true"}
+      enable_lightgbm: {type: str, default: "false"}
+    command: "python scripts/mlflow_training_entry.py
+              --data-path {data_path}
+              --test-size {test_size}
+              --random-state {random_state}
+              --max-depth-xgb {max_depth_xgb}
+              --learning-rate-xgb {learning_rate_xgb}
+              --n-estimators-xgb {n_estimators_xgb}
+              --num-leaves-lgb {num_leaves_lgb}
+              --learning-rate-lgb {learning_rate_lgb}
+              --n-estimators-lgb {n_estimators_lgb}
+              --enable-xgboost {enable_xgboost}
+              --enable-lightgbm {enable_lightgbm}"

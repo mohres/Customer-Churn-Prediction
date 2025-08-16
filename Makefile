@@ -77,6 +77,13 @@ run-jupyter: ## Start Jupyter Lab
 mlflow-ui: ## Start MLflow UI
 	mlflow ui --host 0.0.0.0 --port 5000
 
+# Monitoring
+test-monitoring: ## Test the monitoring system
+	python scripts/test_monitoring.py
+
+run-monitoring: ## Generate monitoring dashboard
+	python scripts/demo_monitoring.py
+
 # Docker commands
 docker-build: ## Build Docker image
 	docker build -t customer-churn-prediction -f docker/Dockerfile .

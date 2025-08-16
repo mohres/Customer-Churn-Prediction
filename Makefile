@@ -1,4 +1,4 @@
-.PHONY: help install install-dev clean lint format test test-cov type-check pre-commit setup-dev run-api docker-build docker-run
+.PHONY: help install install-dev clean lint format test test-cov pre-commit setup-dev run-api docker-build docker-run
 
 # Default target
 help: ## Show this help message

@@ -1,0 +1,10 @@
+mlflow:
+  artifacts:
+    models_path: models
+    plots_path: plots
+    reports_path: reports
+  experiment_name: churn_prediction
+  model_registry:
+    production_threshold: 0.9
+    staging_threshold: 0.85
+  tracking_uri: file:///home/mohres/ml-test/mlruns

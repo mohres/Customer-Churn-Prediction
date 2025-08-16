@@ -66,9 +66,16 @@ def compute_activity_features(
                     user_df["datetime"].max() - user_df["datetime"].min()
                 ).days
                 + 1,
-                "avg_events_per_session": len(user_df) / user_df["sessionId"].nunique(),
-                "avg_events_per_day": len(user_df)
-                / user_df["datetime"].dt.date.nunique(),
+                "avg_events_per_session": (
+                    len(user_df) / user_df["sessionId"].nunique()
+                    if user_df["sessionId"].nunique() > 0
+                    else 0
+                ),
+                "avg_events_per_day": (
+                    len(user_df) / user_df["datetime"].dt.date.nunique()
+                    if user_df["datetime"].dt.date.nunique() > 0
+                    else 0
+                ),
             }
         )
 
@@ -187,7 +194,7 @@ def compute_engagement_features(df: pd.DataFrame) -> pd.DataFrame:
                 {
                     "thumbs_up_ratio": 0,
                     "thumbs_down_ratio": 0,
-                    "positive_engagement_ratio": 0.5,  # neutral when no thumbs activity
+                    "positive_engagement_ratio": 0,
                 }
             )
 
@@ -198,7 +205,9 @@ def compute_engagement_features(df: pd.DataFrame) -> pd.DataFrame:
         user_features.update(
             {
                 "page_diversity": unique_pages,
-                "page_exploration_ratio": unique_pages / total_page_types,
+                "page_exploration_ratio": (
+                    unique_pages / total_page_types if total_page_types > 0 else 0
+                ),
             }
         )
 
@@ -340,10 +349,17 @@ def compute_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
                     "session_duration_std": session_df_stats["duration"].std(),
                     "avg_session_events": session_df_stats["events"].mean(),
                     "avg_session_songs": session_df_stats["songs"].mean(),
-                    "short_sessions_rate": (session_df_stats["duration"] < 5).sum()
-                    / len(session_df_stats),  # < 5 min
-                    "long_sessions_rate": (session_df_stats["duration"] > 60).sum()
-                    / len(session_df_stats),  # > 1 hour
+                    "short_sessions_rate": (
+                        (session_df_stats["duration"] < 5).sum() / len(session_df_stats)
+                        if len(session_df_stats) > 0
+                        else 0
+                    ),  # < 5 min
+                    "long_sessions_rate": (
+                        (session_df_stats["duration"] > 60).sum()
+                        / len(session_df_stats)
+                        if len(session_df_stats) > 0
+                        else 0
+                    ),  # > 1 hour
                 }
             )
         else:
@@ -371,6 +387,8 @@ def compute_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
                 "daily_activity_consistency": (
                     1 - (daily_events.std() / daily_events.mean())
                     if daily_events.mean() > 0
+                    and not pd.isna(daily_events.mean())
+                    and not pd.isna(daily_events.std())
                     else 0
                 ),
                 "active_days_streak_max": _calculate_max_streak(daily_events.index),

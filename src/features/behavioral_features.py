@@ -275,7 +275,11 @@ def compute_usage_trend_features(
                             f"activity_trend_{window}d": slope,
                             f"activity_trend_strength_{window}d": abs(r_value),
                             f"activity_volatility_{window}d": (
-                                np.std(y) / np.mean(y) if np.mean(y) > 0 else 0
+                                np.std(y) / np.mean(y)
+                                if np.mean(y) > 0
+                                and not np.isnan(np.mean(y))
+                                and not np.isnan(np.std(y))
+                                else 0
                             ),
                         }
                     )
@@ -298,7 +302,11 @@ def compute_usage_trend_features(
                     "overall_activity_trend": slope,
                     "overall_trend_strength": abs(r_value),
                     "overall_activity_volatility": (
-                        np.std(y) / np.mean(y) if np.mean(y) > 0 else 0
+                        np.std(y) / np.mean(y)
+                        if np.mean(y) > 0
+                        and not np.isnan(np.mean(y))
+                        and not np.isnan(np.std(y))
+                        else 0
                     ),
                 }
             )
@@ -338,7 +346,10 @@ def compute_usage_trend_features(
 
             # Activity consistency
             # Measures how consistent daily activity is (lower CV indicates more consistency)
-            activity_cv = np.std(y) / np.mean(y) if np.mean(y) > 0 else 1
+            if np.mean(y) > 0 and not np.isnan(np.mean(y)) and not np.isnan(np.std(y)):
+                activity_cv = np.std(y) / np.mean(y)
+            else:
+                activity_cv = 1
             user_features["activity_consistency_score"] = 1 / (
                 1 + activity_cv
             )  # Normalize to [0,1]
@@ -566,12 +577,15 @@ def compute_interaction_depth_features(df: pd.DataFrame) -> pd.DataFrame:
 
             # Early vs late engagement comparison
             mid_point = len(engagement_events) // 2
-            if mid_point > 0:
-                early_engagement_rate = len(engagement_events[:mid_point]) / (
-                    len(user_df_sorted) // 2
+            first_half_size = len(user_df_sorted) // 2
+            second_half_size = len(user_df_sorted) - first_half_size
+
+            if mid_point > 0 and first_half_size > 0 and second_half_size > 0:
+                early_engagement_rate = (
+                    len(engagement_events[:mid_point]) / first_half_size
                 )
-                late_engagement_rate = len(engagement_events[mid_point:]) / (
-                    len(user_df_sorted) - len(user_df_sorted) // 2
+                late_engagement_rate = (
+                    len(engagement_events[mid_point:]) / second_half_size
                 )
 
                 user_features["engagement_rate_change"] = (

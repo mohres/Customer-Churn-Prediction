@@ -5,10 +5,15 @@
 ## 🎯 Project Highlights
 
 ✅ **99.8% AUC-ROC** - Exceptional model performance on customer churn prediction
+
 ✅ **Real-time Feature Engineering** - 167 features computed from raw events in <100ms
+
 ✅ **Production API** - FastAPI server with authentication, monitoring, and Docker support
+
 ✅ **Complete MLOps Pipeline** - MLflow tracking, automated training, model registry
+
 ✅ **Comprehensive Monitoring** - Data drift detection, performance tracking, business impact analysis
+
 ✅ **Full Dataset Validation** - Tested with 543K+ real customer events
 
 ## 📊 Key Results

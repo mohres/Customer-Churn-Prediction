@@ -127,6 +127,15 @@ outputs/
 logs/
 *.log
 
+# Generated MLOps artifacts
+# These directories contain auto-generated files from the ML pipeline:
+# - reports/: Model comparison reports, pipeline summaries, classification reports
+# - plots/: Evaluation plots (ROC curves, confusion matrices, feature importance)
+# - cache/: Cached features and intermediate processing results
+reports/
+plots/
+cache/
+
 # Notebook outputs and temp files
 .ipynb_checkpoints/
 *-checkpoint.ipynb

@@ -96,21 +96,21 @@ docker-run: ## Run Docker container
 
 
 # Data processing
-process-data: ## Run data preprocessing pipeline
-	python src/data/preprocess.py
+process-data: ## Run data preprocessing and validation
+	python -m src.data.data_validator
 
 train-model: ## Train ML model
-	python src/models/train.py
+	python scripts/train_production_model.py --data-path data/customer_churn_mini.json
 
 # Utility commands
 requirements: ## Generate requirements.txt from pyproject.toml
-	pip-compile pyproject.toml
+	uv pip compile pyproject.toml -o requirements.txt
 
 update-deps: ## Update all dependencies to latest versions
-	pip-compile --upgrade pyproject.toml
+	uv pip compile --upgrade pyproject.toml -o requirements.txt
 
 # Complete project setup
-init-project: init-notebooks init-config setup-dev ## Initialize complete project structure
+init-project: setup-dev ## Initialize complete project structure
 	@echo "Project initialization complete!"
 	@echo "Next steps:"
 	@echo "  1. Update author information in pyproject.toml"

@@ -176,18 +176,23 @@ make help             # Show all available commands
 make install          # Install production dependencies
 make install-dev      # Install development dependencies
 make setup-dev        # Complete development setup
+make init-project     # Initialize complete project structure
 make clean            # Clean temporary files and caches
 make format           # Format code with black and ruff
 make lint             # Run ruff linter
-make test             # Run tests
-make test-cov         # Run tests with coverage
+make pre-commit       # Run pre-commit hooks on all files
 make check-all        # Run all quality checks
-make run-api          # Start FastAPI server (experimental)
+make run-api          # Run the FastAPI application
 make run-jupyter      # Start Jupyter Lab
 make mlflow-ui        # Start MLflow UI
-make pre-commit       # Run pre-commit hooks
+make train-model      # Train ML model (uses mini dataset)
+make process-data     # Run data preprocessing and validation
 make test-monitoring  # Test monitoring system
 make run-monitoring   # Generate monitoring dashboard
+make docker-build     # Build Docker image
+make docker-run       # Run Docker container
+make requirements     # Generate requirements.txt from pyproject.toml
+make update-deps      # Update all dependencies to latest versions
 ```
 
 ## 🔧 Configuration

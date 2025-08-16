@@ -146,6 +146,7 @@ ignore = [
     "S607",  # starting a process with a partial executable path
     "S104",  # binding to all interfaces
     "N805",  # first argument of a method should be named 'self' (wrong for @field_validator)
+    "N815",  # mixedCase variable in class scope (used for API field names)
 ]
 
 [tool.ruff.lint.mccabe]

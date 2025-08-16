@@ -28,7 +28,6 @@ clean: ## Clean up temporary files and caches
 	find . -type f -name "*.pyc" -delete
 	find . -type f -name "*.pyo" -delete
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type d -name ".ruff_cache" -exec rm -rf {} +
 	rm -rf build/
 	rm -rf dist/
@@ -45,8 +44,6 @@ format: ## Format code with black and ruff
 	ruff check --fix src tests
 	isort src tests
 
-type-check: ## Run mypy type checker
-	mypy src
 
 # Testing
 test: ## Run tests
@@ -86,7 +83,7 @@ run-monitoring: ## Generate monitoring dashboard
 
 # Docker commands
 docker-build: ## Build Docker image
-	docker build -t customer-churn-prediction -f docker/Dockerfile .
+	docker build -t customer-churn-prediction -f Dockerfile .
 
 docker-run: ## Run Docker container
 	docker run -p 8000:8000 customer-churn-prediction

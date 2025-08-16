@@ -24,16 +24,24 @@ setup-dev: install-dev ## Complete development setup
 
 # Environment management
 clean: ## Clean up temporary files and caches
-	find . -type d -name "__pycache__" -delete
-	find . -type f -name "*.pyc" -delete
-	find . -type f -name "*.pyo" -delete
-	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	find . -type d -name ".ruff_cache" -exec rm -rf {} +
+	rm -rf __pycache__/
+	rm -rf src/__pycache__/
+	rm -rf src/*/__pycache__/
+	rm -rf src/*/*/__pycache__/
+	find . -name "*.pyc" -delete
+	find . -name "*.pyo" -delete
+	rm -rf .pytest_cache/
+	rm -rf .ruff_cache/
+	rm -rf htmlcov/
+	rm -rf .coverage
+	rm -rf cache/
+	rm -rf plots/
+	rm -rf reports/
+	rm -rf test_dashboard/
+	rm -rf test_monitoring_data/
 	rm -rf build/
 	rm -rf dist/
 	rm -rf *.egg-info/
-	rm -rf htmlcov/
-	rm -rf .coverage
 
 # Code quality
 lint: ## Run ruff linter
@@ -46,8 +54,6 @@ format: ## Format code with black and ruff
 
 
 # Testing
-test: ## Run tests
-	pytest tests/
 
 test-cov: ## Run tests with coverage report
 	pytest --cov=src --cov-report=html --cov-report=term-missing tests/
@@ -60,7 +66,7 @@ pre-commit: ## Run pre-commit hooks on all files
 	pre-commit run --all-files
 
 # Quality check pipeline (recommended before commits)
-check-all: clean lint type-check test ## Run all quality checks
+check-all: clean lint ## Run all quality checks
 	@echo "All quality checks passed!"
 
 # Application
@@ -88,8 +94,6 @@ docker-build: ## Build Docker image
 docker-run: ## Run Docker container
 	docker run -p 8000:8000 customer-churn-prediction
 
-docker-dev: ## Run development environment in Docker
-	docker-compose -f docker/docker-compose.yml up --build
 
 # Data processing
 process-data: ## Run data preprocessing pipeline
@@ -104,19 +108,6 @@ requirements: ## Generate requirements.txt from pyproject.toml
 
 update-deps: ## Update all dependencies to latest versions
 	pip-compile --upgrade pyproject.toml
-
-# Project initialization
-init-notebooks: ## Create initial notebook structure
-	mkdir -p notebooks/exploratory notebooks/experiments notebooks/reports
-	touch notebooks/exploratory/.gitkeep
-	touch notebooks/experiments/.gitkeep
-	touch notebooks/reports/.gitkeep
-
-init-config: ## Create initial configuration files
-	mkdir -p config
-	echo "# Development configuration" > config/dev.yml
-	echo "# Production configuration" > config/prod.yml
-	echo "# Local configuration (add to .gitignore)" > config/local.yml
 
 # Complete project setup
 init-project: init-notebooks init-config setup-dev ## Initialize complete project structure

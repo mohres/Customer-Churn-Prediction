@@ -23,12 +23,14 @@ Endpoints:
 - GET /metrics: Prometheus-compatible metrics
 """
 
+import json
 import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
+import numpy as np
 import pandas as pd
 import shap
 import structlog
@@ -168,6 +170,7 @@ class UserEvent(BaseModel):
     song_id: str | None = Field(None, description="Song identifier if applicable")
     artist: str | None = Field(None, description="Artist name if applicable")
     session_id: str | None = Field(None, description="Session identifier")
+    level: str | None = Field(None, description="Subscription level (free/paid)")
 
     @field_validator("timestamp")
     def validate_timestamp(cls, v):
@@ -189,7 +192,7 @@ class PredictionRequest(BaseModel):
         None, description="Reference date for feature computation"
     )
     model_name: str | None = Field(
-        "lightgbm_churn_model", description="Model to use for prediction"
+        "production_churn_model", description="Model to use for prediction"
     )
 
     @field_validator("reference_date")
@@ -212,7 +215,7 @@ class BatchPredictionRequest(BaseModel):
         ..., description="List of user prediction requests"
     )
     model_name: str | None = Field(
-        "lightgbm_churn_model", description="Model to use for predictions"
+        "production_churn_model", description="Model to use for predictions"
     )
 
 
@@ -255,7 +258,7 @@ class ExplanationRequest(BaseModel):
         None, description="Reference date for feature computation"
     )
     model_name: str | None = Field(
-        "lightgbm_churn_model", description="Model to use for explanation"
+        "production_churn_model", description="Model to use for explanation"
     )
 
 
@@ -402,6 +405,48 @@ def get_model(model_name: str):
     return model_store.models[model_name]
 
 
+def prepare_features_for_prediction(features_df: pd.DataFrame) -> pd.DataFrame:
+    """Prepare features for prediction by ensuring they match training format."""
+    # Load model metadata to get expected features
+    metadata_path = Path("models") / "production_model_metadata.json"
+    if metadata_path.exists():
+        with open(metadata_path) as f:
+            model_metadata = json.load(f)
+        expected_features = model_metadata["feature_columns"]
+
+        # Ensure we have all expected features
+        missing_features = set(expected_features) - set(features_df.columns)
+        if missing_features:
+            logger.warning(f"Missing features: {missing_features}")
+            # Fill missing features with default values
+            for feature in missing_features:
+                if "rate" in feature or "ratio" in feature:
+                    features_df[feature] = 0.0
+                elif "count" in feature or "events" in feature:
+                    features_df[feature] = 0
+                else:
+                    features_df[feature] = 0.0
+
+        # Handle categorical encoding for current_subscription_level
+        if "current_subscription_level" in features_df.columns:
+            level_mapping = {"free": 0, "paid": 1}
+            features_df["current_subscription_level"] = (
+                features_df["current_subscription_level"].map(level_mapping).fillna(0)
+            )
+
+        # Select only the expected features in the correct order
+        prediction_features = features_df[expected_features]
+
+        # Fill any remaining NaN values
+        prediction_features = prediction_features.fillna(0)
+
+        return prediction_features
+    else:
+        # Fallback to numeric columns only
+        numeric_columns = features_df.select_dtypes(include=[np.number]).columns
+        return features_df[numeric_columns]
+
+
 def compute_user_features(
     events: list[UserEvent], reference_date: str | None = None
 ) -> pd.DataFrame:
@@ -409,14 +454,23 @@ def compute_user_features(
     # Convert events to DataFrame
     events_data = []
     for event in events:
+        # Convert timestamp to milliseconds since epoch if it's ISO format
+        if isinstance(event.timestamp, str):
+            dt = datetime.fromisoformat(event.timestamp.replace("Z", "+00:00"))
+            ts_ms = int(dt.timestamp() * 1000)
+        else:
+            ts_ms = event.timestamp
+
         events_data.append(
             {
-                "user_id": event.user_id,
-                "timestamp": event.timestamp,
-                "event": event.event,
-                "song_id": event.song_id,
+                "userId": event.user_id,
+                "ts": ts_ms,
+                "page": event.event,
+                "song": event.song_id,
                 "artist": event.artist,
-                "session_id": event.session_id,
+                "sessionId": event.session_id,
+                "level": event.level or "free",  # Default to free if not specified
+                "length": 180.0,  # Default song length in seconds
             }
         )
 
@@ -432,7 +486,9 @@ def compute_user_features(
     model_store.feature_store.config.reference_date = ref_date
 
     # Compute features
-    features_df = model_store.feature_store.compute_features(events_df)
+    features_df, validation_results = model_store.feature_store.compute_features(
+        events_df
+    )
 
     return features_df
 
@@ -501,8 +557,11 @@ async def predict_churn(
                 detail="Could not compute features from provided events",
             )
 
+        # Prepare features for prediction
+        prediction_features = prepare_features_for_prediction(features_df)
+
         # Make prediction
-        churn_prob = model.predict_proba(features_df)[0][
+        churn_prob = model.predict_proba(prediction_features)[0][
             1
         ]  # Probability of churn (class 1)
         churn_prediction = churn_prob >= 0.5
@@ -573,8 +632,12 @@ async def predict_churn_batch(
                     failed += 1
                     continue
 
+                # Filter to only numeric columns for prediction
+                numeric_columns = features_df.select_dtypes(include=[np.number]).columns
+                prediction_features = features_df[numeric_columns]
+
                 # Make prediction
-                churn_prob = model.predict_proba(features_df)[0][1]
+                churn_prob = model.predict_proba(prediction_features)[0][1]
                 churn_prediction = churn_prob >= 0.5
                 confidence_score = abs(churn_prob - 0.5) * 2
 
@@ -659,12 +722,15 @@ async def explain_prediction(
                 detail="Could not compute features from provided events",
             )
 
+        # Prepare features for prediction
+        prediction_features = prepare_features_for_prediction(features_df)
+
         # Make prediction
-        churn_prob = model.predict_proba(features_df)[0][1]
+        churn_prob = model.predict_proba(prediction_features)[0][1]
         churn_prediction = churn_prob >= 0.5
 
         # Get SHAP values
-        shap_values = explainer.shap_values(features_df)
+        shap_values = explainer.shap_values(prediction_features)
 
         # Handle different SHAP output formats
         if isinstance(shap_values, list):
@@ -672,8 +738,8 @@ async def explain_prediction(
             shap_values = shap_values[1]
 
         # Create feature explanations
-        feature_names = features_df.columns.tolist()
-        feature_values = features_df.iloc[0].values
+        feature_names = prediction_features.columns.tolist()
+        feature_values = prediction_features.iloc[0].values
         shap_vals = shap_values[0] if shap_values.ndim > 1 else shap_values
 
         feature_explanations = []

@@ -144,6 +144,8 @@ ignore = [
     "T201",  # print found
     "S603",  # subprocess call: check for execution of untrusted input
     "S607",  # starting a process with a partial executable path
+    "S104",  # binding to all interfaces
+    "N805",  # first argument of a method should be named 'self' (wrong for @field_validator)
 ]
 
 [tool.ruff.lint.mccabe]
